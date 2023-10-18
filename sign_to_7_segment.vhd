@@ -1,0 +1,32 @@
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity sign_to_7_segment is
+
+     port(
+				sign,ovf 	 	: in std_logic;
+				clk_i,enb 		: in std_logic;
+				seven_seg   :out std_logic_vector (6 downto 0));
+				
+end sign_to_7_segment;
+
+architecture data_process of sign_to_7_segment is
+signal seven_seg_tem : std_logic_vector (6 downto 0);
+begin
+  process(clk_i)  -- sensitivity list
+	 begin
+		if clk_i'event and clk_i='1' and enb='1' THEN   
+				case sign is             --gfedcba
+					when '0' => seven_seg_tem <= "1111111"; --7-segment display NONE
+					when '1' => seven_seg_tem <= "0111111"; --7-segment display "-"
+				end case;
+				if (ovf = '1') then
+					seven_seg <= "0001110"; --7-segment display F
+				elsif(ovf = '0') then
+					seven_seg <= seven_seg_tem;
+				end if;
+		end if;
+	end process;
+end data_process;
+
+

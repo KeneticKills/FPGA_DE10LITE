@@ -1,0 +1,54 @@
+library ieee;
+use ieee.std_logic_1164.ALL;
+use ieee.STD_LOGIC_ARITH.all;
+
+entity Calculator is
+		Generic (
+			n : integer := 5
+		);
+		Port ( clock  : in  std_logic;	-- system clock
+             reset  : in  std_logic; 	-- synchronous reset, active-high
+				 data_in_1 	: in  STD_LOGIC_VECTOR (n-1 downto 0);
+				 data_in_2 	: in  STD_LOGIC_VECTOR (n-1 downto 0);
+				 operator : in STD_LOGIC_VECTOR (1 downto 0);
+				 m : in std_logic;
+				 seven_seg_digit_1 : out STD_LOGIC_VECTOR (6 downto 0);
+				 seven_seg_digit_2 : out STD_LOGIC_VECTOR (6 downto 0);
+				 seven_seg_digit_3 : out STD_LOGIC_VECTOR (6 downto 0) );
+end Calculator;
+
+architecture converter of fullAdderSubtracter is
+ signal BCD_data_digit_1 : STD_LOGIC_VECTOR (3 downto 0);
+ signal BCD_data_digit_2 : STD_LOGIC_VECTOR (3 downto 0);
+ signal sign : STD_LOGIC_VECTOR(1 downto 0);
+	begin
+		convert_binary:		entity work.fullAdder_n_bit(Behavioral)
+									generic map(
+										n => n
+										)
+									port map(
+										clk_i => clock,
+										rst_i => reset,
+										data_a  => data_in_1,
+										data_b  => data_in_2,
+										m => m,
+										BCD_digit_1 => BCD_data_digit_1,
+										BCD_digit_2 => BCD_data_digit_2,
+										bit_3 => sign);
+		seven_seg_display_1: entity work. BDC_to_7_segmen(data_process)
+									port map(
+										clk_i => clock,
+										BCD_i  => BCD_data_digit_1,
+										seven_seg  =>seven_seg_digit_1 );
+		seven_seg_display_2: entity work. BDC_to_7_segmen(data_process)
+									port map(
+										clk_i => clock,
+										BCD_i  => BCD_data_digit_2,
+										seven_seg  =>seven_seg_digit_2 );
+		seven_seg_display_3: entity work. BDC_to_7_segment_sign(data_process)
+									port map(
+										clk_i => clock,
+										BCD_i  => sign,
+										seven_seg  =>seven_seg_digit_3 );
+end converter;
+

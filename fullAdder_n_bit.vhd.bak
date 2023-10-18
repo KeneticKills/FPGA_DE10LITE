@@ -1,0 +1,95 @@
+library ieee;
+use ieee.std_logic_1164.ALL;
+use ieee.STD_LOGIC_ARITH.all;
+
+entity fullAdder_n_bit is
+		Generic (n : integer := 5);
+		Port ( clk_i  : in  std_logic;	-- system clock
+             rst_i  : in  std_logic; 	-- synchronous reset, active-high
+				 data_a 	: in  STD_LOGIC_VECTOR (n-1 downto 0);
+				 data_b	: in  STD_LOGIC_VECTOR (n-1 downto 0);
+				 m : in std_logic;
+				 BCD_digit_1 : out STD_LOGIC_VECTOR (3 downto 0);
+				 BCD_digit_2 : out STD_LOGIC_VECTOR (3 downto 0);
+				 bit_3 : out STD_LOGIC_VECTOR (1 downto 0) );
+					  
+end fullAdder_n_bit;
+
+architecture Behavioral of fullAdder_n_bit is
+signal middle_value : STD_LOGIC_VECTOR (n downto 0);
+signal sum : STD_LOGIC_VECTOR (n-1 downto 0);
+signal sign_bit : STD_LOGIC_VECTOR (1 downto 0);
+signal sum_out : STD_LOGIC_VECTOR (n-1 downto 0);
+signal x : STD_LOGIC_VECTOR (n downto 0);
+signal carry_out : std_logic;
+signal overflow : std_logic;
+	begin  
+adder : for i in 0 to n-1 generate
+			 com1 : if i = 0 generate
+			 FA_1 : entity work.fullAdder_1_bit(Behavioral)
+			 port map(
+				 clk_i => clk_i,
+				 rst_i => rst_i,
+				 data_a  => data_a(i),
+				 data_b  => data_b(i) XOR m,
+				 carry_in => m,
+				 sum => sum(i),
+				 carry_out => x(i));
+			end generate;
+			com2 : if i > 0 and i < n-1 generate
+			FA_2 : entity work.fullAdder_1_bit(Behavioral)
+			port map(
+				 clk_i => clk_i,
+				 rst_i => rst_i,
+				 data_a  => data_a(i),
+				 data_b  => data_b(i) XOR m,
+				 carry_in => x(i-1),
+				 sum => sum(i),
+				 carry_out => x(i));
+		  end generate;
+		  com3 : if i = n-1 generate
+		  FA_3 : entity work.fullAdder_1_bit(Behavioral)
+		  port map(
+				 clk_i => clk_i,
+				 rst_i => rst_i,
+				 data_a  => data_a(i),
+				 data_b  => data_b(i) XOR m,
+				 carry_in => x(i-1),
+				 sum => sum(i),
+				 carry_out => carry_out);
+		 end generate;
+	  end generate;
+	  check : entity work.sumChecker(Behavioral)
+				  generic map(
+					n =>n
+					)
+				  port map(
+						clk_i => clk_i,
+						sum => sum,
+						overflow => carry_out Xor x(n-2),
+						sign_bit => sign_bit,
+						sum_out => sum_out
+				  );
+		process(clk_i, rst_i)
+			begin
+				if (rst_i='0' ) then  
+					BCD_digit_1 <= "0000";
+					BCD_digit_2 <= "0000";
+					bit_3 <= "00";
+					
+				elsif (clk_i'event and clk_i='1') then
+
+				  overflow <= carry_out Xor x(n-2);
+				  BCD_digit_1 <= conv_std_logic_vector(conv_integer(unsigned(sum_out)) mod 10 ,4);
+				  BCD_digit_2 <= conv_std_logic_vector((conv_integer(unsigned(sum_out))mod 100) / 10 , 4);
+				  bit_3 <= sign_bit;
+					
+				 if(overflow = '1') then
+					  BCD_digit_1 <= "1111";
+					  BCD_digit_2 <= "1111";
+					end if;
+             end if;
+		end process;
+
+		
+end Behavioral;

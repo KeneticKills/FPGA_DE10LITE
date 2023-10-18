@@ -1,0 +1,33 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use ieee.numeric_std.all;
+
+entity multiply_n_bit is
+    generic (
+        N : integer := 5
+    );
+    Port (
+		  CLK : in std_logic;
+        A,B: in STD_LOGIC_VECTOR(N - 1 downto 0):= (others => '0');
+		  BCD_1, BCD_2 : out std_logic_vector(3 downto 0);
+		  sign : out std_logic;
+        DONE     : out STD_LOGIC := '0'
+    );
+end multiply_n_bit;
+
+architecture Behavioral of multiply_n_bit is
+signal result : std_logic_vector((2*N) - 1 downto 0):= (others => '0'); 
+signal sign,D : std_logic ;
+begin
+	multi : entity work.Multi(Behave)
+				generic map(N => N)
+				port map(
+					A => A,
+					B => B,
+					R => result,
+					sign => sign,
+					DONE => D
+				);
+	
+end Behavioral;
