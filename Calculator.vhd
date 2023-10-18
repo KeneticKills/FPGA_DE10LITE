@@ -148,7 +148,7 @@ signal cal_state : cal_type := INUM;
 					when INUM =>
 						if(start /= old_st) then
 							old_st <= start;
-							if(start='0') then
+							if(start='1') then
 								cal_state <= IOP;
 							else
 								cal_state <= INUM;
@@ -172,7 +172,7 @@ signal cal_state : cal_type := INUM;
 					when IOP =>
 						if(start /= old_st) then
 							old_st <= start;
-							if (start='0') then
+							if (start='1') then
 								cal_state <= OUTP;
 							else
 								cal_state <= IOP;
@@ -194,7 +194,7 @@ signal cal_state : cal_type := INUM;
 					when OUTP =>
 							if(start /= old_st) then
 							old_st <= start;
-							if (start='0') then
+							if (start='1') then
 								cal_state <= OUTP;
 							else
 								cal_state <= OUTP;
